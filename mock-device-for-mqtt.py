@@ -43,8 +43,8 @@ class SendDataActiveServer(threading.Thread):
          try:
            self.active = self.queue.get(block=False)
          except Queue.Empty:
-           #quene.get()方法在队列中为空是返回异常，捕获异常返回false表示没有收到任何消息
-           self.active = False
+           #quene.get()方法在队列中为空是返回异常，捕获异常什么都不做，保持active原状
+
 
 #当接收到命令，响应命令
 def on_message(client, userdata, msg):
