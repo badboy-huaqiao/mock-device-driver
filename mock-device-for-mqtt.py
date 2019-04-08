@@ -27,26 +27,24 @@ class SendDataActiveServer(threading.Thread):
          self.threadID = threadID
          self.name = name
          self.queue = queue
+         self.active = False
 
      def run(self):
-         var active = false
-         active = self.getItemFromQueue()
-
          while 1==1 :
-           if active:
+           if self.active:
               send_data()
               time.sleep(1)
-              active = self.getItemFromQueue()
+              self.getItemFromQueue()
            else:
               time.sleep(1)
-              active = self.getItemFromQueue()
+              self.getItemFromQueue()
 
      def getItemFromQueue(self):
          try:
-           return self.queue.get(block=False)
+           self.active = self.queue.get(block=False)
          except Queue.Empty:
            #quene.get()方法在队列中为空是返回异常，捕获异常返回false表示没有收到任何消息
-           return false
+           self.active = False
 
 #当接收到命令，响应命令
 def on_message(client, userdata, msg):
@@ -67,7 +65,7 @@ def on_message(client, userdata, msg):
        print("This is randnum cmd")
        d['randnum'] = 520.1314
 
-    if d['cmd'] == "collect" && d['method'] == "set":
+    if d['cmd'] == "collect" and d['method'] == "set":
        print("This is collect cmd")
        d['result'] = "set successed."
        #param的值是true或false
