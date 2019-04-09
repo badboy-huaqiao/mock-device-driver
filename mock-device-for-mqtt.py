@@ -13,7 +13,7 @@ globalQueue = Queue.Queue()
 
 def send_data():
     #java版本, name的值为添加的设备名
-    var data = {"randnum":520.1314,"name":""}
+    data = {"randnum":520.1314,"name":"mqtt-device-01"}
 
     #go版本, name的值为添加的设备名, go版本的区别是必须带上cmd字段
     #var data = {"randnum":520.1314,"name":"","cmd":"randnum"}
@@ -22,29 +22,34 @@ def send_data():
     client.publish("DataTopic",json.dumps(data) , qos=0, retain=False)
 
 class SendDataActiveServer(threading.Thread):
-     def __init__(self,threadID,name,queue):
-         super(SendDataActiveServer,self).__init__()
-         self.threadID = threadID
-         self.name = name
-         self.queue = queue
-         self.active = False
+    def __init__(self,threadID,name,queue):
+        super(SendDataActiveServer,self).__init__()
+        self.threadID = threadID
+        self.name = name
+        self.queue = queue
+        self.active = False
 
-     def run(self):
-         while 1==1 :
-           if self.active:
-              send_data()
-              time.sleep(1)
-              self.getItemFromQueue()
-           else:
-              time.sleep(1)
-              self.getItemFromQueue()
+    def run(self):
+        while 1==1 :
+          if self.active:
+             send_data()
+             time.sleep(1)
+             self.getItemFromQueue()
+          else:
+             time.sleep(1)
+             self.getItemFromQueue()
 
-     def getItemFromQueue(self):
-         try:
-           self.active = self.queue.get(block=False)
-         except Queue.Empty:
-           #quene.get()方法在队列中为空是返回异常，捕获异常什么都不做，保持active原状
-
+    def getItemFromQueue(self):
+        try:
+          #这个地方为啥用字符串判断，但是device profile文件中的collect属性是Boolean，
+          #这个是因为现有的device-mqtt发送命令时，参数一律是string，可参见MqttDriver.java的402行的CmdMsg类的param属性就是string类型
+          if self.queue.get(block=False) == "true":
+             self.active = True
+          else:
+             self.active = False
+        except Queue.Empty:
+          #quene.get()方法在队列中为空是返回异常，捕获异常什么都不做，保持active原状
+          time.sleep(0.1)
 
 #当接收到命令，响应命令
 def on_message(client, userdata, msg):
@@ -66,11 +71,13 @@ def on_message(client, userdata, msg):
        d['randnum'] = 520.1314
 
     if d['cmd'] == "collect" and d['method'] == "set":
-       print("This is collect cmd")
+       print("This is collect set cmd")
        d['result'] = "set successed."
-       #param的值是true或false
+       #param的值是true或false,且是字符串类型
        globalQueue.put(d['param'])
-
+    elif d['cmd'] == "collect" and d['method'] == "get":
+       print("This is collect get cmd")
+       d['collect'] = thread.active
 
     print(json.dumps(d))
     client.publish("ResponseTopic", json.dumps(d))
@@ -81,7 +88,7 @@ def on_connect(client, userdata, flags, rc):
     client.subscribe("CommandTopic")
 
 client = mqtt.Client()
-client.username_pw_set("huaqiao", "1234")
+client.username_pw_set("tobeprovided", "tobeprovided")
 client.on_message = on_message
 client.on_connect = on_connect
 
@@ -89,6 +96,7 @@ client.connect("192.168.56.4", 1883, 60)
 
 #开始独立线程用于主动发送数据
 thread = SendDataActiveServer("Thread-1", "SendDataServerThread", globalQueue)
+thread.setDaemon(True)
 thread.start()
 
 client.loop_forever()
