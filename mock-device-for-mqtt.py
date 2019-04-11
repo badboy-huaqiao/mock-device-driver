@@ -1,6 +1,8 @@
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
 
+#version: python 2.7
+#如果是python3 需要修改部分依赖包或者语句语法
 #用于模拟一个基于mqtt协议传输虚拟设备驱动
 
 import paho.mqtt.client as mqtt
@@ -8,6 +10,16 @@ import json
 import time
 import Queue
 import threading
+
+BROKER_HOST_ADDR   = "192.168.56.4"
+BROKER_HOST_PORT   = 1883
+USERNAME    = "huaqiao"
+PWD         = "1234"
+#cmd topic本质上就是你的设备监听的topic，
+#也是在UI上添加device的时候，地址中所填数据，和用户名密码等一起组成当前设备的唯一标识。
+CMD_TOPIC   = "CommandTopic"
+RESPONSE_TOPIC = "ResponseTopic"
+DATA_TOPIC  = "DataTopic"
 
 globalQueue = Queue.Queue()
 
@@ -19,7 +31,7 @@ def send_data():
     #var data = {"randnum":520.1314,"name":"","cmd":"randnum"}
 
     print("sending data actively! " + json.dumps(data))
-    client.publish("DataTopic",json.dumps(data) , qos=0, retain=False)
+    client.publish(DATA_TOPIC,json.dumps(data) , qos=0, retain=False)
 
 class SendDataActiveServer(threading.Thread):
     def __init__(self,threadID,name,queue):
@@ -80,19 +92,19 @@ def on_message(client, userdata, msg):
        d['collect'] = thread.active
 
     print(json.dumps(d))
-    client.publish("ResponseTopic", json.dumps(d))
+    client.publish(RESPONSE_TOPIC, json.dumps(d))
 
 def on_connect(client, userdata, flags, rc):
     print("Connected with result code "+str(rc))
     #监听命令
-    client.subscribe("CommandTopic")
+    client.subscribe(CMD_TOPIC)
 
 client = mqtt.Client()
-client.username_pw_set("tobeprovided", "tobeprovided")
+client.username_pw_set(USERNAME, PWD)
 client.on_message = on_message
 client.on_connect = on_connect
 
-client.connect("192.168.56.4", 1883, 60)
+client.connect(BROKER_HOST_ADDR, BROKER_HOST_PORT, 60)
 
 #开始独立线程用于主动发送数据
 thread = SendDataActiveServer("Thread-1", "SendDataServerThread", globalQueue)
