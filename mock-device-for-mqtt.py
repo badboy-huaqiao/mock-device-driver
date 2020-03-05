@@ -23,13 +23,16 @@ DATA_TOPIC  = "DataTopic"
 
 globalQueue = Queue.Queue()
 
+def gen():
+       return random.uniform(0, 50)
+
 def send_data():
     #java版本, name的值为添加的设备名
-    data = {"randnum":520.1314,"name":"mqtt-device-01"}
+    #data = {"randnum":520.1314,"name":"mqtt-device-01"}
 
     #go版本, name的值为添加的设备名, go版本的区别是必须带上cmd字段
     #var data = {"randnum":520.1314,"name":"","cmd":"randnum"}
-
+    data = {"randnum":gen(),"name":"","cmd":"randnum"}
     print("sending data actively! " + json.dumps(data))
     client.publish(DATA_TOPIC,json.dumps(data) , qos=0, retain=False)
 
