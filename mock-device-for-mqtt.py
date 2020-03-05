@@ -9,7 +9,7 @@ import paho.mqtt.client as mqtt
 import json
 import time
 import Queue
-import threading
+import threading,random
 
 BROKER_HOST_ADDR   = "192.168.56.4"
 BROKER_HOST_PORT   = 1883
@@ -24,7 +24,7 @@ DATA_TOPIC  = "DataTopic"
 globalQueue = Queue.Queue()
 
 def gen():
-       return random.uniform(0, 50)
+       return round(random.uniform(0, 50),2)
 
 def send_data():
     #java版本, name的值为添加的设备名
