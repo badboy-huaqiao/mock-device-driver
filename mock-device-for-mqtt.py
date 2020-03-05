@@ -32,7 +32,7 @@ def send_data():
 
     #go版本, name的值为添加的设备名, go版本的区别是必须带上cmd字段
     #var data = {"randnum":520.1314,"name":"","cmd":"randnum"}
-    data = {"randnum":gen(),"name":"","cmd":"randnum"}
+    data = {"randnum":gen(),"name":"mqtt-device-01","cmd":"randnum"}
     print("sending data actively! " + json.dumps(data))
     client.publish(DATA_TOPIC,json.dumps(data) , qos=0, retain=False)
 
@@ -83,7 +83,7 @@ def on_message(client, userdata, msg):
 
     if d['cmd'] == "randnum":
        print("This is randnum cmd")
-       d['randnum'] = 520.1314
+       d['randnum'] = gen()
 
     if d['cmd'] == "collect" and d['method'] == "set":
        print("This is collect set cmd")
