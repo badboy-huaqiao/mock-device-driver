@@ -1,0 +1,65 @@
+name: "Test-Device-MQTT-Profile-VMware"
+manufacturer: "VMware <huaqiaoz@vmware.com>"
+model: "jakarta-v2.1.0"
+labels:
+- "test"
+- "v2.1.0"
+description: "Test mqtt device profile"
+deviceResources:
+-
+  name: collect
+  isHidden: true
+  description: "enable/disable collect data actively"
+  properties:
+    valueType: "Bool"
+    readWrite: "RW"
+    defaultValue: "false"
+-
+  name: ping
+  isHidden: true
+  description: "ping-pong"
+  properties:
+    valueType: "String"
+    readWrite: "R"
+    defaultValue: "pong"
+-
+  name: randnum
+  isHidden: true
+  description: "randnum number"
+  properties:
+    valueType: "Float32"
+    readWrite: "R"
+    defaultValue: "Hello World"
+-
+  name: message
+  isHidden: true
+  description: "device  message"
+  properties:
+    valueType: "String"
+    readWrite: "R"
+
+deviceCommands:
+-
+  name: testcollect
+  readWrite: "RW"
+  isHidden: false
+  resourceOperations:
+    - { deviceResource: "collect" }
+-
+  name: testping
+  readWrite: "R"
+  isHidden: false
+  resourceOperations:
+    - { deviceResource: "ping" }
+-
+  name: testrandnum
+  readWrite: "R"
+  isHidden: false
+  resourceOperations:
+    - { deviceResource: "randnum" }
+-
+  name: testmessage
+  readWrite: "R"
+  isHidden: false
+  resourceOperations:
+    - { deviceResource: "message" }
